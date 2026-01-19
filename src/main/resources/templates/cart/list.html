@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta charset="UTF-8">
+    <title>장바구니 목록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+
+</head>
+<body>
+  <th:block layout:fragment="content">
+    <h1>장바구니 목록</h1>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <table  class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <td><input type="checkbox" class="checkAll"></td>
+                        <td class="aa">상품명</td>
+                        <td>상품가격</td>
+                        <td>수량</td>
+                        <td>합계</td>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="dto  :   ${responsePageDTO.dtoList}">
+                        <tr >
+                            <td>
+                                <input class="checkb" type="checkbox" th:value="${dto.id}">
+                            </td>
+                            <td th:text="${dto.IName}">상품명</td>
+                            <td th:text="${dto.IPrice + ' 원'}">상품가격</td>
+                            <td >
+                                <input th:data-num="${dto.id}" class="count" type="number" th:value="${dto.count}">
+                            </td>
+                            <td th:text="${#numbers.formatInteger(dto.IPrice * dto.count ,1,  'COMMA') + ' 원'}">합계</td>
+
+                        </tr>
+                    </th:block>
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+
+
+        <div class="row ">
+            <div class="col">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-center">
+
+                        <li class="" th:class="${responsePageDTO.prev ? 'page-item ' : 'page-item disabled' }">
+                                <a class="page-link" th:href="@{/cart/list(page=${responsePageDTO.start -1})}">Previous</a>
+
+                        </li>
+
+
+
+                        <th:block th:each="pageNum : ${#numbers.sequence(responsePageDTO.start , responsePageDTO.end)}">
+
+                            <li class="page-item">
+                                <a class="page-link" href="#" th:text="${pageNum}">1</a>
+                            </li>
+
+                        </th:block>
+
+                        <li class="page-item" th:classappend="${ responsePageDTO.next ?   '' :  'disabled'}">
+                                <a class="page-link" th:href="@{/cart/list(page=${responsePageDTO.end +1})}">Previous</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <button class="btn btn-dark oBtn"> 주문하기 </button>
+        <button class="delBtn"> 삭제하기 </button>
+    </div>
+
+
+
+
+
+
+    <script>
+        let countInputs = document.querySelectorAll(".count")
+        let checkbs = document.querySelectorAll(".checkb")
+        let delBtn = document.querySelector(".delBtn")
+        let checkAll = document.querySelector(".checkAll")
+        let oBtn = document.querySelector(".oBtn")
+
+        console.log(checkbs)
+
+
+        //주문하기 버튼을 눌렀을 때 모든 체크박스를 확인하고 해당 체크박스가 체크되어있는 아이의 pk번호를
+        // 다 가져와서 해당 수량을 가져온다.  안가져온다 수량은 db에 이미 반영
+
+        oBtn.addEventListener("click" , function (e) {
+            let nums = []
+            checkbs.forEach(  a =>  {
+
+                if(a.checked){
+
+                    console.log(a)
+
+                    nums.push(a.value)
+
+                }
+            }  )
+
+            if(nums.length == 0) {
+                alert("주문하실 상품을 선택해주세요")
+                return
+            }
+
+            ordersSend(nums)
+
+        })
+
+
+
+        checkAll.addEventListener("click" ,function (e) {
+
+            for(let i = 0; i < checkbs.length; i++){
+                checkbs[i].checked = e.target.checked
+            }
+
+        })
+
+        delBtn.addEventListener("click" , function (e) {
+
+            // 키벨류가 되어있는 배열형태를 만든다.
+            // nums = [   1,314 ,12 ,7 ,4]
+            nums = []
+            console.log(nums)
+
+            for ( let i = 0; i < checkbs.length ;  i++ ){
+                // console.log(checkbs[i].checked)
+
+                if(checkbs[i].checked) {
+                    nums.push( checkbs[i].value )
+
+                }
+            }
+
+
+            nums = { nums : nums}
+            console.log(nums)
+            del(JSON.stringify(nums) , "/cart/del" , "delete")
+
+
+        })
+
+
+
+        console.log(countInputs)
+
+        countInputs.forEach(
+            countInput => countInput.addEventListener("change" , function (e) {
+                console.log("홍길동")
+                //컨트롤러에 보낼데이터 만들기 json
+                console.log(e.target.value)
+                console.log(e.target.dataset.num)
+
+                let dto = { itemid :  e.target.dataset.num  , count : e.target.value}
+                console.log(dto)
+
+                updateCount(JSON.stringify(dto) , "/cart/updateCount" , "put")
+
+
+            })
+
+
+        )
+        
+        function ordersSend( nums ) {
+
+            nums = {nums : nums}
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("post" ,"/orders/orders" , true);
+            xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(xhr.responseText)
+                    location.href = "/orders/list"
+
+                } else if (xhr.readyState === 4 && xhr.status === 400) {
+                    console.log(xhr.responseText)
+                    alert(xhr.responseText)
+
+                    location.href = "/cart/list"
+                }
+            };
+            xhr.send(JSON.stringify(nums));
+
+        }
+
+
+        function del( dto , urlAdd , method ) {
+
+            const xhr = new XMLHttpRequest();
+            xhr.open(method ,urlAdd , true);
+            xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(xhr.responseText)
+                    location.href = "/cart/list"
+
+                } else if (xhr.readyState === 4 && xhr.status === 400) {
+                    console.log(xhr.responseText)
+                    alert(xhr.responseText)
+
+                    location.href = "/cart/list"
+                }
+            };
+            xhr.send(dto);
+
+        }
+        
+        function updateCount( dto , urlAdd , method ) {
+
+            const xhr = new XMLHttpRequest();
+            xhr.open(method ,urlAdd , true);
+            xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(xhr.responseText)
+                } else if (xhr.readyState === 4 && xhr.status === 400) {
+                    console.log(xhr.responseText)
+                    alert(xhr.responseText)
+
+                    location.href = "/cart/list"
+                }
+            };
+            xhr.send(dto);
+
+        }
+
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+  </th:block>
+</body>
+</html>

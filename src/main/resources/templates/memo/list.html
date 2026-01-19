@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta charset="UTF-8">
+    <title>목록</title>
+
+</head>
+<body>
+  <th:block layout:fragment="content">
+    <h1>목록</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <td class="aa">글번호</td>
+                <td>제목</td>
+                <td>작성자</td>
+            </tr>
+        </thead>
+        <tbody>
+            <th:block th:each=" memoDTO  :   ${memoDTOList}">
+                <tr >
+                    <td th:text="${memoDTO.mno}">글번호</td>
+                    <td >
+                        <a th:href="@{/memo/read(mno=${memoDTO.mno})}"  th:text="${memoDTO.title}"></a>
+                    </td>
+                    <td th:text="${memoDTO.userDTO.email}">글번호</td>
+                </tr>
+            </th:block>
+
+
+        </tbody>
+    </table>
+
+
+  </th:block>
+</body>
+</html>

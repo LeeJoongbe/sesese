@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+                xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+
+      >
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <!--css 및 js 파일 불러오기-->
+    <th:block layout:fragment="script">
+        <!--js 적용-->
+    </th:block>
+    <th:block layout:fragment="css">
+        <!-- css 적용-->
+    </th:block>
+
+
+</head>
+<body>
+
+
+    <th:block th:replace="fragments/header::header">
+
+    </th:block>
+
+    <div class="container">
+        <th:block layout:fragment="content">
+
+        </th:block>
+    </div>
+
+
+
+    <th:block th:replace="fragments/footer::footer">
+
+    </th:block>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+
+</body>
+</html>

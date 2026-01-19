@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta charset="UTF-8">
+    <title>등록</title>
+</head>
+<body>
+  <th:block layout:fragment="content">
+    <h1>등록</h1>
+
+        <form action="/memo/register" method="post" enctype="multipart/form-data">
+            제목 :  <input name="title"> <br>
+            내용 :  <input name="content"> <br>
+
+            사진등록 : <br>
+            <div class="aa">
+
+            </div>
+
+            <div class="aaaa">
+                <input name="imgs" type="file" class="imgFile">
+            </div>
+
+            <button>저장</button>
+
+
+        </form>
+
+    <script>
+        let imgFile = document.querySelector(".aaaa")
+        let aa = document.querySelector(".aa")
+        document.body.addEventListener("click" , function (e) {
+            if(e.target.tagName ==  "BUTTON" && e.target.classList.contains("delBtn") ) {
+                aa.innerHTML = ""
+                imgFile.value = ""
+            }
+
+        })
+
+        imgFile.addEventListener("change" , function (e) {
+            //이미지 바뀌었을때? 인풋값이 바뀌었을때
+            //이미지가 없다면 이벤트종료
+            let file = e.target.files[0];
+            if(!file || !file.type.startsWith('image/')) {
+                alert("파일이 없거나 이미지가 아닙니다.")
+                aa.innerHTML = ""
+                return
+            }
+
+            let reader = new FileReader()
+
+            reader.onload = function (event) {
+
+                //사진이 맞다면
+                let img = document.createElement("img")
+                img.src = event.target.result
+                aa.append(img)
+
+                let btn = document.createElement("button")
+                btn.className = "delBtn"
+                btn.type = "button"
+                btn.textContent = "삭제"
+                aa.append(btn)
+            }
+
+            reader.readAsDataURL(file)
+
+            e.target.type = "hidden"
+            let inputt = document.createElement("input")
+            inputt.type = "file"
+            inputt.name = "imgs"
+            document.querySelector(".aaaa").append(inputt)
+
+        })
+
+
+    </script>
+
+
+      </th:block>
+</body>
+</html>

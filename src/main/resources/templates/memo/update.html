@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta charset="UTF-8">
+    <title>수정</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+</head>
+<body>
+  <th:block layout:fragment="content">
+    <h1>수정</h1>
+
+    <form class="formObj" action="/memo/update" method="post">
+        <input type="hidden" name="mno" th:value="${memoDTO.mno}">
+        글번호 : <span th:text="${memoDTO.mno}"></span> <br>
+        제목 :      <input name="title" th:value="${memoDTO.title}">          <br>
+        내용 :      <input name="content" th:value="${memoDTO.content}">          <br>
+        작성자 : <span th:text="${memoDTO.userDTO.email}"></span><br>
+        <div class="position-relative">
+            <img th:if="${memoDTO.imgName!=null}" th:src="${'/images/' + memoDTO.imgName}" th:alt="${memoDTO.orgName}">
+            <button class="imgdBtn position-absolute top-0 start-0 btn btn-dark">삭제</button>
+        </div>
+        <button class="uBtn">저장</button>
+        <button type="button" class="dBtn">삭제</button>
+        <button type="button" class="lBtn">목록</button>
+
+
+    </form>
+    <script th:inline="javascript">
+
+        let mno = [[${memoDTO.mno}]];
+        let imgno = [[${memoDTO.imgno}]]
+        let lBtn = document.querySelector(".lBtn")
+        let dBtn = document.querySelector(".dBtn")
+        let imgdBtn = document.querySelector(".imgdBtn")
+        let formObj = document.querySelector(".formObj")
+
+
+        imgdBtn.addEventListener("click" , function (e) {
+            e.target.parentElement.remove()
+            let inputimgno = document.createElement("input")
+            inputimgno.name = "imgno"
+            inputimgno.value = imgno
+            inputimgno.type = "hidden"
+
+            formObj.append(inputimgno)
+        })
+
+
+        lBtn.addEventListener("click" , function (e) {
+            location.href = "/memo/list"
+        })
+
+        dBtn.addEventListener("click" , function (e) {
+            //삭제
+            // 폼태그 만들어서 input태그 만들서 네임지정하고
+            // 값 지정하고
+            // 폼태그 자식으로 input태그 지정하고
+            // 폼태그를 body에 자식으로 지정하고
+            // 폼태그 action 값 지정하고 , method 지정하고
+            // 폼태그.서브밋
+
+            let formObj = document.createElement("form")
+            let inputObj = document.createElement("input")
+
+            formObj.append(inputObj)
+
+            inputObj.value = mno
+            inputObj.name = "mno"
+            inputObj.type ="hidden"
+            formObj.action = "/memo/del"
+            formObj.method = "post"
+
+            document.body.append(formObj)
+
+            console.log(formObj)
+            formObj.submit()
+
+
+        })
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+  </th:block>
+</body>
+</html>

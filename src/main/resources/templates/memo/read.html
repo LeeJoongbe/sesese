@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 읽기</title>
+    <style>
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .content-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+
+        h1 { font-size: 24px; color: #1a73e8; margin-bottom: 20px; }
+        .info-row { margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
+        .info-row b { width: 80px; display: inline-block; color: #5f6368; }
+
+        /* 댓글 리스트 */
+        .replylist { list-style: none; padding: 0; margin: 0; }
+        .replylist li {
+            padding: 16px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .replylist li:hover { background-color: #f8f9fa; }
+        .cc {
+            flex: 1;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 15px;
+            color: #202124;
+        }
+        .rno-badge {
+            background: #e8f0fe;
+            color: #1967d2;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* 버튼 스타일 */
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .uBtn { background: #1a73e8; color: white; margin-right: 8px; }
+        .lBtn { background: #dadce0; color: #3c4043; }
+        .openRegBtn { background: #34a853; color: white; float: right; }
+        .theBtn { width: 100%; background: white; border: 1px solid #dadce0; color: #5f6368; margin-top: 15px; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* 모달 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            z-index: 1001;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .modal-content h3 { margin-top: 0; color: #202124; }
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+
+        .reg-modal-btn { background: #34a853; color: white; }
+        .ruBtn { background: #1a73e8; color: white; }
+        .rdBtn { background: #ea4335; color: white; }
+        .close-btn { background: #f1f3f4; color: #3c4043; }
+    </style>
+</head>
+<body>
+  <th:block layout:fragment="content">
+
+<div class="content-box">
+    <h1>상세보기</h1>
+    <div class="info-row"><b>글번호</b> <span th:text="${memoDTO.mno}"></span></div>
+    <div class="info-row"><b>제목</b> <span th:text="${memoDTO.title}"></span></div>
+    <div class="info-row"><b>내용</b> <span th:text="${memoDTO.content}"></span></div>
+    <div class="info-row"><b>작성자</b> <span th:text="${memoDTO.userDTO.email}"></span></div>
+    <div class="info-row">
+        <img th:if="${memoDTO.imgName!=null}" th:src="${'/images/' + memoDTO.imgName}" th:alt="${memoDTO.orgName}">
+
+    </div>
+
+
+
+    <div style="margin-top: 20px;">
+        <button class="uBtn">수정</button>
+        <button class="lBtn">목록</button>
+    </div>
+</div>
+
+<div class="content-box">
+    <h3 style="display: inline-block;">댓글 목록</h3>
+    <!-- 등록 모달을 여는 버튼 -->
+    <th:block sec:authorize="isAuthenticated()">
+        <button class="openRegBtn">댓글 쓰기</button>
+    </th:block>
+
+    <th:block sec:authorize="anonymous">
+        <a href="/user/login">로그인</a>
+    </th:block>
+
+    <h1 sec:authorize="hasRole('ROLE_USER')">유저</h1>
+    <h1 sec:authorize="hasRole('ROLE_ADMIN')">관리자</h1>
+
+
+    <ul class="replylist">
+        <!-- JS에서 동적 생성 -->
+    </ul>
+    <button class="theBtn">댓글 더보기 ↓</button>
+</div>
+
+<!-- 1. 댓글 등록 모달 -->
+<div id="regModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>새 댓글 작성</h3>
+        <input class="title" placeholder="내용을 입력하세요...">
+        <div class="modal-btns">
+            <button class="close-btn" onclick="closeModal('regModal')">취소</button>
+            <button class="rBtn reg-modal-btn">저장하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. 댓글 수정/삭제 모달 (uDiv 대체) -->
+<div id="updateModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>댓글 수정/삭제</h3>
+        <input class="updateinput">
+        <div class="modal-btns">
+            <button class="close-btn" onclick="closeModal('updateModal')">취소</button>
+            <button class="ruBtn">수정</button>
+            <button class="rdBtn">삭제</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    let mno = [[${memoDTO.mno}]];
+
+    // 요소 선택 (기존 변수명 유지)
+    let uBtn = document.querySelector(".uBtn");
+    let lBtn = document.querySelector(".lBtn");
+    let rBtn = document.querySelector(".rBtn"); // 등록 모달 내 버튼
+    let title = document.querySelector(".title"); // 등록 모달 내 입력창
+    let rdiv = document.querySelector(".replylist");
+    let theBtn = document.querySelector(".theBtn");
+    let uDiv = document.querySelector("#updateModal"); // uDiv를 모달창으로 참조
+    let updateinput = document.querySelector(".updateinput");
+    let ruBtn = document.querySelector(".ruBtn");
+    let rdBtn = document.querySelector(".rdBtn");
+    let page = 1;
+
+    // 모달 제어 함수
+    function openModal(id) { document.getElementById(id).style.display = 'block'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // 등록 모달 열기 버튼 이벤트
+    document.querySelector(".openRegBtn").addEventListener("click", () => {
+        title.value = "";
+        openModal('regModal');
+    });
+
+    window.onload = function () { replylist(page); };
+
+    theBtn.addEventListener("click" , function () { replylist(page); });
+
+    // 댓글등록 (모달 내 저장 버튼)
+    rBtn.addEventListener("click" , function () {
+        saveReply(title.value , mno);
+        closeModal('regModal');
+    });
+
+    // 삭제버튼
+    rdBtn.addEventListener("click" , function (e) {
+        del(e.target.value);
+    });
+
+    // 수정 완료 버튼
+    ruBtn.addEventListener("click" , function (e) {
+        let dto = { content: updateinput.value , rno : e.target.value };
+        update(dto);
+    });
+
+    // 댓글 클릭 시 수정 모달 열기
+    rdiv.addEventListener("click" , function (e) {
+        if(e.target.tagName === "SPAN" && e.target.className === "cc"){
+            openModal('updateModal');
+            updateinput.value = e.target.textContent;
+
+            let rnoValue = e.target.parentElement.querySelector(".rno-badge").textContent;
+            ruBtn.value = rnoValue;
+            rdBtn.value = rnoValue;
+        }
+    });
+
+    uBtn.addEventListener("click" , () => { location.href = "/memo/update?mno="+ mno; });
+    lBtn.addEventListener("click" , () => { location.href = "/memo/list"; });
+
+    // --- AJAX 로직 (기존과 동일) ---
+
+    function update(dto) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("put" , "/reply/update", true);
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                alert(xhr.responseText + "번 글이 수정되었습니다.");
+                closeModal('updateModal');
+                page = 1; rdiv.innerHTML = "";
+                replylist(page);
+            }
+        };
+        xhr.send(JSON.stringify(dto));
+    }
+
+    function saveReply(content , mno) {
+        let reply = { content : content, mno : mno };
+        const xhr = new XMLHttpRequest();
+        xhr.open("post" , "/reply/register", true);
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        xhr.setRequestHeader("X-Requested-With" , "XMLHttpRequest")
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                console.log(xhr.responseText)
+                rdiv.innerHTML = "";
+                page = 1;
+                replylist(page);
+                console.log("저장됨")
+            }else if(  xhr.readyState === 4 && xhr.status === 401){
+                console.log(xhr.status)
+                alert("로그인이 필요합니다.")
+                location.href = "/user/login"
+            }
+        };
+        xhr.send(JSON.stringify(reply));
+    }
+
+    function replylist(page) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("get" , "/reply/list?page=" + encodeURIComponent(page) + "&mno=" + encodeURIComponent(mno), true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let a = JSON.parse(xhr.responseText);
+                console.log(a)
+                logww(a);
+            }
+        };
+        xhr.send();
+    }
+
+    function logww(dtoList) {
+        if (dtoList.length != 0){
+            page++;
+            let str = "";
+            for(let i=0 ; i < dtoList.length; i++){
+                str += `
+                    <li>
+                        <span class="rno-badge">${dtoList[i].rno}</span>
+                        <span class="cc">${dtoList[i].content}</span>
+                        <span style="font-size:12px; color:#999;">${dtoList[i].userDTO.email}</span>
+                    </li>`;
+            }
+            rdiv.innerHTML += str;
+        } else if(page === 1) {
+            rdiv.innerHTML = "<li style='justify-content:center; color:#999;'>댓글이 없습니다.</li>";
+        }
+    }
+
+    function del(rno) {
+        let num = {rno: rno};
+        const xhr = new XMLHttpRequest();
+        xhr.open("delete" , "/reply/del", true);
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                alert(xhr.responseText);
+                closeModal('updateModal');
+                page = 1; rdiv.innerHTML = "";
+                replylist(page);
+            }
+        };
+        xhr.send(JSON.stringify(num));
+    }
+</script>
+  </th:block>
+</body>
+</html>

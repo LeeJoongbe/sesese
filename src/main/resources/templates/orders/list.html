@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta charset="UTF-8">
+    <title>주문 목록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+
+</head>
+<body>
+  <th:block layout:fragment="content">
+    <h1>주문 목록</h1>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+
+                <!--주문 : 그 안에 주문아이템들을 넣을예정-->
+
+                <th:block th:each="a  : ${responsePageDTO.dtoList}">
+                    <div class="row">
+                        <div class="col shadow">
+                            <h5 th:text="${'주문번호 : ' + a.ono}">주문번호</h5>
+                                <div class="row">
+                                    <!-- 주문아이템들 다시 반복-->
+                                    <th:block th:each="orderItemDTO  : ${a.orderItemDTOList}">
+                                        <div class="col">
+                                            <div class="card" style="width: 18rem;">
+                                                <img src="/img/img.png" class="card-img-top" alt="...">
+                                                <div class="card-body">
+                                                    <h5 class="card-title" th:text="${orderItemDTO.itemDTO.iName}">Card title</h5>
+                                                    <p class="card-text" th:text="${orderItemDTO.itemDTO.iDetail}">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                                                    <p class="card-text" th:text="${orderItemDTO.itemDTO.iPrice + ' 원'}">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                                                    <p class="card-text" th:text="${'구매수량 : ' + orderItemDTO.oiCount}">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                                                    <p class="card-text" th:text="${'주문금액 : ' + #numbers.formatInteger( orderItemDTO.oiCount * orderItemDTO.itemDTO.iPrice  ,1 , 'COMMA' )}">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                                                    <a href="#" class="btn btn-primary">주문취소</a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </th:block>
+                                </div>
+                        </div>
+                    </div>
+                </th:block>
+
+
+
+
+            </div>
+        </div>
+
+
+        <div class="row ">
+            <div class="col">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-center">
+
+                        <li class="" th:class="${responsePageDTO.prev ? 'page-item ' : 'page-item disabled' }">
+                                <a class="page-link" th:href="@{/cart/list(page=${responsePageDTO.start -1})}">Previous</a>
+
+                        </li>
+
+
+
+                        <th:block th:each="pageNum : ${#numbers.sequence(responsePageDTO.start , responsePageDTO.end)}">
+
+                            <li class="page-item">
+                                <a class="page-link" href="#" th:text="${pageNum}">1</a>
+                            </li>
+
+                        </th:block>
+
+                        <li class="page-item" th:classappend="${ responsePageDTO.next ?   '' :  'disabled'}">
+                                <a class="page-link" th:href="@{/cart/list(page=${responsePageDTO.end +1})}">Previous</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <button> 주문하기 </button>
+        <button class="delBtn"> 삭제하기 </button>
+    </div>
+
+
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+  </th:block>
+</body>
+</html>

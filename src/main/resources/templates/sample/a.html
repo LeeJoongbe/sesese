@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <th:block layout:fragment="content">
+
+
+
+
+
+    <div class="aa ">
+
+    </div>
+    <input type="file" class="imgFile">
+
+
+
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <button class="aBtn">a</button>
+    <button class="bBtn">b</button>
+    <button class="cBtn" value="홍길동">c</button>
+
+    <input class="title">
+    <input class="content">
+    <button class="dBtn" >d</button>
+    <button class="eBtn" >e</button>
+    <button class="fBtn" >f</button>
+    <button class="gBtn" >g</button>
+
+    <script>
+      let aBtn = document.querySelector(".aBtn")
+      let bBtn = document.querySelector(".bBtn")
+      let cBtn = document.querySelector(".cBtn")
+
+      let title = document.querySelector(".title")
+      let content = document.querySelector(".content")
+      let dBtn = document.querySelector(".dBtn")
+      let eBtn = document.querySelector(".eBtn")
+      let fBtn = document.querySelector(".fBtn")
+      let gBtn = document.querySelector(".gBtn")
+
+      gBtn.addEventListener("click" , function (e) {
+        let titlevalue = title.value
+        let contentvalue = content.value
+
+        let memoObj = {  title: titlevalue , content  :  contentvalue    }
+
+        const  xhr = new XMLHttpRequest()
+
+        xhr.open("post" , "/g",true)
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            let a = JSON.parse(xhr.responseText)
+            console.log(a.title);
+            console.log(a.content);
+            console.log(xhr.response);
+
+          }
+        };
+        xhr.send(JSON.stringify(memoObj));
+
+      })
+
+
+      fBtn.addEventListener("click" , function (e) {
+
+        let titlevalue = title.value
+        let contentvalue = content.value
+
+        let memoObj = {  title: titlevalue , content  :  contentvalue    }
+
+        const  xhr = new XMLHttpRequest()
+
+        xhr.open("post" , "/f",true)
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            alert(xhr.response);
+          }
+        };
+        xhr.send(JSON.stringify(memoObj));
+
+      })
+
+      eBtn.addEventListener("click" , function () {
+
+        const  xhr = new XMLHttpRequest()
+
+        xhr.open("post" , "/e",true)
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            alert(xhr.response);
+          }
+        };
+        xhr.send();
+
+      })
+
+
+
+
+
+      dBtn.addEventListener("click" , function (e) {
+        const  xhr = new XMLHttpRequest()
+
+        xhr.open("get" , "/d?title=" + encodeURIComponent(title.value) + "&content="+ encodeURIComponent(content.value) ,true)
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            alert(xhr.response);
+          }
+        };
+        xhr.send();
+      })
+
+
+      cBtn.addEventListener("click" , function (e) {
+        let name = e.target.value
+
+        const  xhr = new XMLHttpRequest()
+
+        xhr.open("get" , "/c?name=" + encodeURIComponent(name) ,true)
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            alert(xhr.response);
+          }
+        };
+        xhr.send();
+
+
+      })
+
+
+      bBtn.addEventListener("click" , function (e) {
+        const  xhr = new XMLHttpRequest()
+
+        xhr.open("get" , "/b" ,true)
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            alert(xhr.response);
+          }
+        };
+        xhr.send();
+      })
+
+
+
+
+      aBtn.addEventListener("click" , function (e) {
+        console.log("a버튼 클릭함")
+
+        const  xhr = new XMLHttpRequest()
+
+        xhr.open("get" , "/a" ,true)
+
+        // 1. 헤더 설정: 폼 데이터를 보낸다고 명시
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            alert("댓글 등록 완료!");
+          }
+        };
+
+// 3. 전송
+        xhr.send();
+
+
+      })
+
+    </script>
+    <script>
+      let imgFile = document.querySelector(".imgFile")
+      let aa = document.querySelector(".aa")
+
+      imgFile.addEventListener("change" , function (e) {
+        //이미지 바뀌었을때? 인풋값이 바뀌었을때
+        //이미지가 없다면 이벤트종료
+        let file = e.target.files[0];
+        if(!file || !file.type.startsWith('image/')) {
+          alert("파일이 없거나 이미지가 아닙니다.")
+          for( let i = 0; i < aa.children.length; i++){
+            aa.children[i].remove()   //버튼은 왜 삭제되지 않는가?
+          }
+          return
+        }
+
+        let reader = new FileReader()
+
+        reader.onload = function (event) {
+
+          //사진이 맞다면
+          let img = document.createElement("img")
+          img.src = event.target.result
+          aa.append(img)
+
+          let btn = document.createElement("button")
+          btn.textContent = "삭제"
+          aa.append(btn)
+        }
+
+        reader.readAsDataURL(file)
+
+
+      })
+
+
+    </script>
+
+
+
+
+
+  </th:block>
+</body>
+</html>
